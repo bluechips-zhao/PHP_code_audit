@@ -1,0 +1,323 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PHP Sink Function Registry",
+  "description": "Single source of truth for all sink function definitions. Used by sink_finder.php, sink_definitions.md, and auditor agents.",
+  "version": "1.0",
+  "last_updated": "2026-05-15",
+
+  "categories": {
+    "RCE": {
+      "label": "Remote Code/Command Execution",
+      "priority": "P0",
+      "sub_categories": {
+        "code_execution": {
+          "functions": [
+            {"name": "eval", "risk": "Critical", "note": "Directly executes PHP code"},
+            {"name": "assert", "risk": "Critical", "note": "Can execute code strings before PHP 7"},
+            {"name": "preg_replace", "risk": "Critical", "note": "/e modifier executes replacement as code (removed in PHP 7)", "check": "e_modifier"},
+            {"name": "create_function", "risk": "Critical", "note": "Uses eval internally (deprecated in PHP 7.2)"}
+          ]
+        },
+        "command_execution": {
+          "functions": [
+            {"name": "system", "risk": "Critical"},
+            {"name": "exec", "risk": "Critical"},
+            {"name": "passthru", "risk": "Critical"},
+            {"name": "shell_exec", "risk": "Critical"},
+            {"name": "popen", "risk": "Critical"},
+            {"name": "proc_open", "risk": "Critical"},
+            {"name": "pcntl_exec", "risk": "Critical"}
+          ]
+        },
+        "callback_execution": {
+          "functions": [
+            {"name": "call_user_func", "risk": "High"},
+            {"name": "call_user_func_array", "risk": "High"},
+            {"name": "array_map", "risk": "Medium", "note": "Dangerous when callback is controllable"},
+            {"name": "array_filter", "risk": "Medium"},
+            {"name": "usort", "risk": "Medium"},
+            {"name": "uasort", "risk": "Medium"},
+            {"name": "uksort", "risk": "Medium"},
+            {"name": "array_walk", "risk": "Medium"}
+          ]
+        },
+        "variable_overwriting": {
+          "functions": [
+            {"name": "extract", "risk": "High"},
+            {"name": "parse_str", "risk": "High", "note": "When no second argument"},
+            {"name": "mb_parse_str", "risk": "High"}
+          ]
+        },
+        "php8_features": {
+          "functions": [
+            {"name": "Fiber::start", "risk": "Medium", "call_type": "method", "note": "PHP 8.1+ Fiber can lead to concurrency issues"},
+            {"name": "Fiber::resume", "risk": "Medium", "call_type": "method", "note": "PHP 8.1+ Fiber resume can cause race conditions"}
+          ],
+          "patterns": [
+            {"pattern": "named_argument_injection", "risk": "High", "note": "PHP 8.0+ Named arguments can bypass parameter filtering by skipping parameters"},
+            {"pattern": "first_class_callable", "risk": "High", "note": "PHP 8.1+ $func(...) creates Closure from any callable, enables dynamic invocation"},
+            {"pattern": "attribute_injection", "risk": "Medium", "note": "PHP 8.0+ Attributes with user-controlled metadata may affect routing/middleware"},
+            {"pattern": "enum_from_injection", "risk": "Medium", "note": "PHP 8.1+ Enum::from() without validation may cause type confusion"},
+            {"pattern": "match_expression_coercion", "risk": "Low", "note": "PHP 8.0+ match() uses strict comparison but loose input may bypass"}
+          ]
+        }
+      }
+    },
+
+    "SQLi": {
+      "label": "SQL Injection",
+      "priority": "P0-P1",
+      "sub_categories": {
+        "native_php": {
+          "functions": [
+            {"name": "mysql_query", "risk": "High", "note": "Deprecated MySQL function"},
+            {"name": "pg_query", "risk": "High"},
+            {"name": "sqlite_query", "risk": "High"}
+          ],
+          "methods": [
+            {"name": "query", "risk": "High", "context": "PDO/MySQLi", "note": "$pdo->query() / $mysqli->query()"},
+            {"name": "exec", "risk": "High", "context": "PDO", "note": "$pdo->exec() — distinguish from PHP exec()"},
+            {"name": "multi_query", "risk": "Critical", "context": "MySQLi", "note": "Supports stacked queries"}
+          ]
+        },
+        "laravel": {
+          "static_methods": [
+            {"name": "DB::raw", "risk": "High"},
+            {"name": "DB::select", "risk": "High"},
+            {"name": "DB::statement", "risk": "High"}
+          ],
+          "methods": [
+            {"name": "whereRaw", "risk": "High"},
+            {"name": "havingRaw", "risk": "High"},
+            {"name": "orderByRaw", "risk": "High"},
+            {"name": "selectRaw", "risk": "High"},
+            {"name": "groupByRaw", "risk": "High"}
+          ]
+        },
+        "thinkphp": {
+          "static_methods": [
+            {"name": "Db::query", "risk": "High"},
+            {"name": "Db::execute", "risk": "High"}
+          ]
+        },
+        "yii2": {
+          "methods": [
+            {"name": "findBySql", "risk": "High"}
+          ]
+        }
+      }
+    },
+
+    "LFI": {
+      "label": "Local/Remote File Inclusion",
+      "priority": "P0-P1",
+      "sub_categories": {
+        "file_inclusion": {
+          "functions": [
+            {"name": "highlight_file", "risk": "High"},
+            {"name": "show_source", "risk": "High"},
+            {"name": "file_get_contents", "risk": "High", "note": "Also SSRF when argument is URL"},
+            {"name": "readfile", "risk": "High"},
+            {"name": "fread", "risk": "Medium"},
+            {"name": "file", "risk": "High"},
+            {"name": "fpassthru", "risk": "Medium"},
+            {"name": "fopen", "risk": "High", "note": "Also SSRF when argument is URL"}
+          ],
+          "language_constructs": ["include", "include_once", "require", "require_once"]
+        }
+      }
+    },
+
+    "FileWrite": {
+      "label": "File Write/Upload",
+      "priority": "P0-P1",
+      "sub_categories": {
+        "file_writing": {
+          "functions": [
+            {"name": "file_put_contents", "risk": "Critical"},
+            {"name": "fwrite", "risk": "High"},
+            {"name": "fputs", "risk": "High"},
+            {"name": "move_uploaded_file", "risk": "Critical"},
+            {"name": "copy", "risk": "High"},
+            {"name": "rename", "risk": "Medium"}
+          ],
+          "methods": [
+            {"name": "extractTo", "risk": "High", "context": "ZipArchive", "note": "Path traversal via zip entries"}
+          ]
+        }
+      }
+    },
+
+    "Deserialization": {
+      "label": "Insecure Deserialization",
+      "priority": "P0",
+      "sub_categories": {
+        "deserialization": {
+          "functions": [
+            {"name": "unserialize", "risk": "Critical"}
+          ],
+          "magic_methods": ["__destruct", "__wakeup", "__toString", "__call", "__get"]
+        }
+      }
+    },
+
+    "SSRF": {
+      "label": "Server-Side Request Forgery",
+      "priority": "P1",
+      "sub_categories": {
+        "ssrf": {
+          "functions": [
+            {"name": "curl_exec", "risk": "Critical"},
+            {"name": "curl_multi_exec", "risk": "Critical"},
+            {"name": "get_headers", "risk": "High"},
+            {"name": "getimagesize", "risk": "Medium"}
+          ]
+        }
+      }
+    },
+
+    "XSS": {
+      "label": "Cross-Site Scripting",
+      "priority": "P1-P2",
+      "sub_categories": {
+        "output_functions": {
+          "functions": [
+            {"name": "printf", "risk": "Medium"},
+            {"name": "vprintf", "risk": "Medium"}
+          ]
+        }
+      }
+    },
+
+    "XXE": {
+      "label": "XML External Entity Injection",
+      "priority": "P1",
+      "sub_categories": {
+        "xml_parsing": {
+          "functions": [
+            {"name": "simplexml_load_string", "risk": "Critical"},
+            {"name": "simplexml_load_file", "risk": "Critical"},
+            {"name": "libxml_disable_entity_loader", "risk": "Critical", "check": "false_argument"}
+          ],
+          "methods": [
+            {"name": "loadXML", "risk": "Critical", "context": "DOMDocument"},
+            {"name": "load", "risk": "Critical", "context": "DOMDocument/XMLReader"}
+          ]
+        }
+      }
+    },
+
+    "NoSQL": {
+      "label": "NoSQL Injection",
+      "priority": "P1",
+      "sub_categories": {
+        "mongodb": {
+          "methods": [
+            {"name": "find", "risk": "High", "context": "MongoDB Collection"},
+            {"name": "findOne", "risk": "High"},
+            {"name": "aggregate", "risk": "High"},
+            {"name": "updateOne", "risk": "High"},
+            {"name": "deleteMany", "risk": "Critical"},
+            {"name": "insertOne", "risk": "High"}
+          ]
+        },
+        "redis": {
+          "methods": [
+            {"name": "eval", "risk": "Critical", "context": "Redis", "note": "Lua script execution"},
+            {"name": "rawCommand", "risk": "Critical", "context": "Redis"}
+          ]
+        }
+      }
+    },
+
+    "WordPress": {
+      "label": "WordPress-Specific Vulnerabilities",
+      "priority": "P0-P2",
+      "sub_categories": {
+        "wp_functions": {
+          "functions": [
+            {"name": "update_option", "risk": "High"},
+            {"name": "update_user_meta", "risk": "High"},
+            {"name": "wp_set_auth_cookie", "risk": "Critical"},
+            {"name": "do_shortcode", "risk": "High"},
+            {"name": "wp_remote_get", "risk": "High"},
+            {"name": "wp_remote_post", "risk": "High"},
+            {"name": "is_admin", "risk": "Critical", "note": "Only checks admin page, not permission"}
+          ]
+        },
+        "wpdb_methods": {
+          "methods": [
+            {"name": "get_results", "risk": "High", "context": "$wpdb"},
+            {"name": "get_row", "risk": "High", "context": "$wpdb"},
+            {"name": "get_var", "risk": "High", "context": "$wpdb"}
+          ]
+        }
+      }
+    },
+
+    "Crypto": {
+      "label": "Weak Cryptography",
+      "priority": "P2",
+      "sub_categories": {
+        "weak_hash": {
+          "functions": [
+            {"name": "md5", "risk": "High", "context_check": "password_variable"},
+            {"name": "sha1", "risk": "High", "context_check": "password_variable"}
+          ]
+        },
+        "weak_random": {
+          "functions": [
+            {"name": "rand", "risk": "High", "context_check": "security_context"},
+            {"name": "mt_rand", "risk": "High", "context_check": "security_context"}
+          ]
+        },
+        "deprecated_crypto": {
+          "functions": [
+            {"name": "mcrypt_encrypt", "risk": "High"},
+            {"name": "mcrypt_decrypt", "risk": "High"},
+            {"name": "mcrypt_cbc", "risk": "High"},
+            {"name": "mcrypt_cfb", "risk": "High"},
+            {"name": "mcrypt_ecb", "risk": "High"},
+            {"name": "mcrypt_ofb", "risk": "High"},
+            {"name": "mcrypt_create_iv", "risk": "High"},
+            {"name": "mcrypt_generic", "risk": "High"},
+            {"name": "mcrypt_module_open", "risk": "High"}
+          ]
+        },
+        "modern_crypto": {
+          "functions": [
+            {"name": "openssl_encrypt", "risk": "High", "context_check": "ecb_mode"}
+          ]
+        }
+      }
+    },
+
+    "GraphQL": {
+      "label": "GraphQL Vulnerabilities",
+      "priority": "P1-P2",
+      "sub_categories": {
+        "graphql_execution": {
+          "methods": [
+            {"name": "executeQuery", "risk": "High"}
+          ],
+          "static_methods": [
+            {"name": "GraphQL::executeQuery", "risk": "High"},
+            {"name": "GraphQLServer::executeQuery", "risk": "High"}
+          ]
+        }
+      }
+    },
+
+    "MassAssignment": {
+      "label": "Mass Assignment",
+      "priority": "P1-P2",
+      "sub_categories": {
+        "laravel_mass_assignment": {
+          "static_methods": [
+            {"name": "Model::create", "risk": "High"}
+          ]
+        }
+      }
+    }
+  }
+}

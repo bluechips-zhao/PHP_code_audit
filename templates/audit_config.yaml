@@ -1,0 +1,99 @@
+# ============================================================
+# PHP_AUDIT_SKILLS Configuration File
+# ============================================================
+# Place this file in the target project root as .php-audit.yaml
+# or specify via: /php-audit-skills --config path/to/config.yaml
+# All fields are optional — defaults are used when omitted.
+# ============================================================
+
+# ── Timeouts (minutes) ──
+timeouts:
+  phase1: 20          # Environment setup
+  phase2: 15          # Static reconnaissance
+  phase3: 15          # Dynamic tracing
+  phase4_per_expert: 20  # Per-expert deep audit
+  phase45: 15         # Post-exploitation
+  phase5: 10          # Report generation
+
+# ── Attack Parameters ──
+attack:
+  rounds: 8           # Max attack rounds per sink (1-20)
+  early_stop_rounds: 2  # Stop if no new findings for N consecutive rounds
+  pivot_on_fail: true # Auto-pivot to alternative attack when all rounds fail
+  destructive: false  # Allow destructive attacks (DROP TABLE, DELETE, etc.)
+
+# ── Priority Threshold ──
+# Sinks below this threshold are skipped
+# Options: P0, P1, P2, P3
+priority_threshold: P2
+
+# ── Forced Auditors ──
+# Always run these auditors regardless of sink detection
+# Available: rce, sqli, deserial, lfi, filewrite, authz, ssrf,
+#            xxe, xss_ssti, nosql, race_condition, wordpress,
+#            business_logic, config, session, ldap, crypto,
+#            csrf, crlf, infoleak, logging
+forced_auditors: []
+  # - rce
+  # - sqli
+
+# ── Skipped Auditors ──
+# Never run these auditors
+skip_auditors: []
+  # - wordpress  # Skip if not a WordPress project
+  # - ldap       # Skip if no LDAP usage
+
+# ── Exclude Paths ──
+# Directories/files to exclude from scanning
+exclude_paths:
+  - vendor/
+  - node_modules/
+  - .git/
+  - storage/framework/views/
+
+# ── Include Paths ──
+# If specified, only scan these paths (overrides exclude_paths)
+include_paths: []
+  # - app/
+  # - routes/
+
+# ── Docker Settings ──
+docker:
+  php_version: "8.2"       # PHP version for audit container
+  parallel_containers: 1   # Number of parallel attack containers (1-4)
+  keep_after_audit: false  # Keep containers after audit completes
+  snapshot_retention: 3    # Number of Docker snapshots to retain
+
+# ── Report Settings ──
+report:
+  language: zh_CN       # Report language: zh_CN, en_US
+  format:               # Output formats
+    - markdown
+    - sarif
+  include_source_snippets: true  # Include source code in report
+  max_snippet_lines: 10          # Max lines per source snippet
+
+# ── Human-in-the-Loop ──
+human_in_loop:
+  enabled: false                # Enable interactive decision points
+  ask_on_auth_failure: true     # Ask when auto-login fails
+  ask_on_destructive: true      # Ask before destructive attacks
+  ask_on_low_confidence: false  # Ask when vulnerability confidence < 50%
+  ask_on_scope_change: true     # Ask when audit scope changes significantly
+
+# ── Attack Memory ──
+memory:
+  enabled: true                 # Enable attack memory system
+  cross_project: true           # Learn from previous projects
+  sanitize_before_save: true    # Sanitize sensitive data before saving
+
+# ── Incremental Audit ──
+incremental:
+  enabled: true                 # Enable incremental audit on git diff
+  max_changed_files: 10         # Threshold for incremental vs full audit
+
+# ── Custom Sink Types ──
+# Map custom sink types to auditor agents
+custom_sink_types: {}
+  # custom_api_call: custom_api_auditor
+  # legacy_db_query: sqli_auditor
