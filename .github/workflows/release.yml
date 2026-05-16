@@ -1,0 +1,48 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: V1.0
+          name: PHP_code_audit_skillsV1.0
+          body: |
+            ## 🛡️ PHP_code_audit_skills V1.0
+
+            **Author: bluechips**
+
+            全链路 PHP 代码安全审计 AI Agent 系统
+
+            Full-pipeline PHP code security audit AI Agent system
+
+            ### Features
+            - 6-phase automated audit pipeline (Environment → Recon → Trace → Attack → Post-Exploitation → Report)
+            - 21 vulnerability type expert auditors (2-stage: analyze + attack)
+            - PHP 8.x security coverage (Named Arguments, First-Class Callable, Fiber, Enum, Attribute, Match)
+            - Intelligent attack memory system (flat + graph memory, cross-project learning)
+            - Mini-Researcher for on-demand intelligence
+            - Human-in-the-Loop decision points (6 key decision points)
+            - Patch auto-verification (7-step verification process)
+            - Configuration-driven (audit_config.yaml)
+            - Sink Registry single source of truth (sink_registry.json)
+            - 560+ controllability constraints
+            - 31 JSON Schemas
+            - SARIF 2.1.0 export
+            - Burp reproduction templates
+            - CVSS visualization
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
