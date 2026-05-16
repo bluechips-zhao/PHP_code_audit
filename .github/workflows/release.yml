@@ -1,4 +1,4 @@
-name: Create Release
+name: Create Release V1.0
 
 on:
   push:
@@ -8,10 +8,16 @@ on:
 jobs:
   create-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Delete V1.0 branch if exists (conflict with tag)
+        run: |
+          git push origin --delete V1.0 2>/dev/null || echo "V1.0 branch does not exist, skipping"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -46,3 +52,12 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove this workflow file
+        run: |
+          git config user.name "bluechips"
+          git config user.email "bluechips-zhao@users.noreply.github.com"
+          git pull origin main
+          git rm .github/workflows/release.yml
+          git commit -m "ci: remove one-time release workflow"
+          git push origin main
