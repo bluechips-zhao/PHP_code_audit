@@ -1,0 +1,49 @@
+name: Update V1.0 Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete old release and tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete V1.0 --yes || true
+          git push origin --delete V1.0 || true
+
+      - name: Create new release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: V1.0
+          name: PHP_code_audit_skillsV1.0
+          body: |
+            ## PHP_code_audit_skills V1.0
+
+            全链路 PHP 代码安全审计 AI Agent 系统
+
+            **Author: bluechips**
+
+            ### 主要特性
+            - 6 阶段全链路自动化审计流水线
+            - 21 种漏洞类型专家级审计
+            - PHP 8.x 全版本安全覆盖
+            - 智能攻击记忆系统（扁平 + 关系型图记忆）
+            - 40+ 专业 Agent 协同工作
+            - 145+ Skills + 31 JSON Schema
+            - 修复补丁 7 步自动验证
+            - 人在回路 6 决策点
+            - 配置文件驱动审计参数
+            - Mini-Researcher 智能研究员
+          draft: false
+          prerelease: false
