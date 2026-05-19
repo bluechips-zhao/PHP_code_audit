@@ -2,7 +2,7 @@
 
 # 🛡️ PHP\_code\_audit\_skills
 
-**全链路 PHP 代码安全审计 AI Agent 系统**
+**Full-Chain PHP Code Security Audit AI Agent System**
 
 **Author: bluechips**
 
@@ -14,122 +14,124 @@
 ![Phase](https://img.shields.io/badge/phases-6-purple)
 ![Controllability](https://img.shields.io/badge/controllability-560+_constraints-yellow)
 
-基于 Claude Code Agent Teams 的多智能体协作安全审计框架。40+ 专业 Agent 协同工作，覆盖环境构建 → 静态侦察 → 动态追踪 → 深度对抗利用 → 后渗透关联分析 → 报告收口全链路，支持 **21 种漏洞类型** 专家级审计与 **PHP 8.x** 全版本安全覆盖。
+**English** | [中文文档](./README_CN.md)
 
-[功能特性](#功能特性) · [快速开始](#快速开始) · [架构总览](#架构总览) · [Agent 编制](#agent-编制) · [输出产物](#输出产物)
+A multi-agent collaborative security audit framework based on Claude Code Agent Teams. 40+ specialized agents work in concert, covering the full chain from environment setup → static reconnaissance → dynamic tracing → deep adversarial exploitation → post-exploitation correlation → report generation. Supports **21 vulnerability types** expert-level auditing with **PHP 8.x** full-version security coverage.
+
+[Features](#features) · [Quick Start](#quick-start) · [Architecture](#architecture) · [Agent Roster](#agent-roster) · [Output Artifacts](#output-artifacts)
 
 </div>
 
-***
+---
 
-## 功能特性
+## Features
 
-### 🔄 全链路自动化流水线
+### 🔄 Full-Chain Automated Pipeline
 
-6 阶段严格顺序执行，每阶段 Gate 门禁强制验收，不可跳跃、不可省略：
+6 strictly sequential phases, each enforced by Gate checkpoints — no skipping, no omission:
 
 ```
-Phase 1 环境构建 → Phase 2 静态侦察 → Phase 3 动态追踪
-→ Phase 4 深度对抗 → Phase 4.5 后渗透分析 → Phase 5 报告收口
+Phase 1 Environment → Phase 2 Static Recon → Phase 3 Dynamic Tracing
+→ Phase 4 Deep Adversarial → Phase 4.5 Post-Exploitation → Phase 5 Reporting
 ```
 
-- **断点续审**：`checkpoint.json` 记录阶段状态，中断后可恢复
-- **增量审计**：Git diff 检测变更，<10 文件变更时提供增量模式
-- **错误自恢复**：DB 损坏、Agent 崩溃、Token 溢出、磁盘不足等 5 种异常场景自动恢复
-- **配置文件驱动**：`audit_config.yaml` 自定义超时、轮数、优先级阈值、排除路径等全部参数
+- **Resume from Checkpoint**: `checkpoint.json` records phase state; resume after interruption
+- **Incremental Audit**: Git diff detects changes; offers incremental mode when <10 files changed
+- **Self-Recovery**: Auto-recovery for 5 failure scenarios (DB corruption, agent crash, token overflow, disk full, etc.)
+- **Config-Driven**: `audit_config.yaml` customizes timeouts, rounds, priority thresholds, exclusion paths, and all parameters
 
-### 🎯 21 种漏洞类型 + PHP 8.x 全版本覆盖
+### 🎯 21 Vulnerability Types + PHP 8.x Full Coverage
 
-| 分类        | 漏洞类型                                                        |
-| --------- | ----------------------------------------------------------- |
-| **注入类**   | RCE（命令/代码执行）、SQLi（一阶+二阶）、NoSQL（MongoDB/Redis）、XXE、LDAP、CRLF |
-| **文件类**   | LFI（本地/远程文件包含）、FileWrite（文件上传/写入）                           |
-| **Web 类** | XSS、SSTI、SSRF（+DNS Rebinding）、CSRF                          |
-| **逻辑类**   | 越权/IDOR、业务逻辑缺陷、竞态条件（含 Fiber 并发）                             |
-| **数据类**   | 反序列化（+POP chain）、Session 管理缺陷                               |
-| **运维类**   | 配置缺陷、弱加密/密钥泄露、信息泄露、日志注入                                     |
-| **框架类**   | WordPress 专有漏洞                                              |
+| Category | Vulnerability Types |
+|----------|-------------------|
+| **Injection** | RCE (command/code execution), SQLi (1st + 2nd order), NoSQL (MongoDB/Redis), XXE, LDAP, CRLF |
+| **File** | LFI (local/remote file inclusion), FileWrite (upload/write) |
+| **Web** | XSS, SSTI, SSRF (+DNS Rebinding), CSRF |
+| **Logic** | Authorization Bypass/IDOR, Business Logic Flaws, Race Conditions (incl. Fiber concurrency) |
+| **Data** | Deserialization (+POP chain), Session Management Flaws |
+| **Ops** | Configuration Flaws, Weak Crypto/Key Leakage, Information Disclosure, Log Injection |
+| **Framework** | WordPress-specific Vulnerabilities |
 
-**PHP 8.x 攻击面**：
+**PHP 8.x Attack Surface**:
 
-| 特性                          | 最低版本 | 安全风险              |
-| --------------------------- | ---- | ----------------- |
-| Named Arguments Injection   | 8.0  | 覆盖安全默认参数绕过 XSS 防护 |
-| First-Class Callable Syntax | 8.1  | 绕过字符串回调检查实现 RCE   |
-| Fiber Concurrency           | 8.1  | TOCTOU 竞态条件       |
-| Enum::from() Type Confusion | 8.1  | 类型混淆与信息泄露         |
-| Attribute Injection         | 8.0  | 动态属性绕过鉴权          |
-| Match Expression Coercion   | 8.0  | 类型转换绕过严格比较        |
+| Feature | Min Version | Security Risk |
+|---------|-------------|---------------|
+| Named Arguments Injection | 8.0 | Override security default params to bypass XSS protection |
+| First-Class Callable Syntax | 8.1 | Bypass string callback checks for RCE |
+| Fiber Concurrency | 8.1 | TOCTOU race conditions |
+| Enum::from() Type Confusion | 8.1 | Type confusion and information leakage |
+| Attribute Injection | 8.0 | Dynamic properties bypass auth |
+| Match Expression Coercion | 8.0 | Type coercion bypasses strict comparison |
 
-### 🧠 智能攻击记忆系统
+### 🧠 Intelligent Attack Memory System
 
-双层记忆架构，跨项目经验积累：
+Dual-layer memory architecture with cross-project experience accumulation:
 
-- **扁平记忆**：`attack_memory` 表 — 按 sink\_type + framework + PHP版本 + WAF 指纹匹配历史攻击经验
-- **关系型图记忆**：`memory_nodes` + `memory_edges` 表 — 7 种实体关系类型，支持攻击链自动发现
-- 跨项目学习：历史审计经验自动积累，新项目审计自动匹配相似模式
+- **Flat Memory**: `attack_memory` table — match historical attack experience by sink_type + framework + PHP version + WAF fingerprint
+- **Relational Graph Memory**: `memory_nodes` + `memory_edges` tables — 7 entity-relation types, support automatic attack chain discovery
+- **Cross-Project Learning**: Historical audit experience auto-accumulates; new projects auto-match similar patterns
 
-### 🔬 Mini-Researcher 智能研究员
+### 🔬 Mini-Researcher
 
-5 种条件自动触发（未知组件、无 PoC 的 Critical CVE、连续 5 轮攻击失败等），本地知识库 → NVD/GitHub Advisory 外部情报 → 结构化输出，3 级置信度消费。
+5 auto-trigger conditions (unknown components, Critical CVE without PoC, 5+ consecutive attack failures, etc.). Local knowledge base → NVD/GitHub Advisory external intelligence → structured output with 3-level confidence consumption.
 
-### ⚡ 混合调度 + 对抗循环
+### ⚡ Hybrid Scheduling + Adversarial Loop
 
-- **并行分析 + 串行攻击**：21 专家先并行静态分析，再逐个独占容器执行攻击
-- **可配置攻击轮数**：默认 8 轮，通过配置文件调整（1-20），含早停机制
-- **Pivot When Stuck**：连续失败自动转向（SQLi→二阶SQLi、XSS→SSTI、LFI→php\://filter RCE 等）
-- **框架感知调度**：Laravel / ThinkPHP / Symfony / WordPress 等框架特征识别与强制审计项
-- **版本感知调度**：PHP < 8.0 → Type Juggling, ThinkPHP 5.x → RCE, PHP 8.1+ → Fiber/Enum 等
+- **Parallel Analysis + Serial Attack**: 21 experts first analyze in parallel, then attack one-by-one with exclusive container access
+- **Configurable Attack Rounds**: Default 8 rounds, adjustable via config (1-20), with early-stop mechanism
+- **Pivot When Stuck**: Auto-pivot on consecutive failures (SQLi→2nd-order SQLi, XSS→SSTI, LFI→php://filter RCE, etc.)
+- **Framework-Aware Scheduling**: Laravel / ThinkPHP / Symfony / WordPress feature detection and mandatory audit items
+- **Version-Aware Scheduling**: PHP < 8.0 → Type Juggling, ThinkPHP 5.x → RCE, PHP 8.1+ → Fiber/Enum, etc.
 
-### 👤 人在回路（Human-in-the-Loop）
+### 👤 Human-in-the-Loop
 
-6 个关键决策点，默认关闭，开启后 60 秒超时自动使用默认值，决策累积（一次拒绝 = 后续同类自动跳过）：
+6 key decision points, disabled by default. When enabled, 60-second timeout applies defaults. Decisions are cumulative (one "no" = subsequent similar ones auto-skip):
 
-| 决策点              | 阶段      | 触发条件           | 默认行为     |
-| ---------------- | ------- | -------------- | -------- |
-| DP-1 破坏性测试       | Phase-4 | 攻击可能修改/删除数据    | 拒绝       |
-| DP-2 手动凭证        | Phase-3 | 自动登录失败         | 降级继续     |
-| DP-3 低置信度深入      | Phase-4 | 置信度 < 50%      | 跳过       |
-| DP-4 范围调整        | Phase-2 | Sink > 50 个    | 保持当前阈值   |
-| DP-5 框架不匹配       | Phase-1 | 检测与预期不符        | 使用检测到的框架 |
-| DP-6 Critical 确认 | Phase-4 | 首个 Critical 漏洞 | 继续审计     |
+| Decision Point | Phase | Trigger | Default |
+|---------------|-------|---------|---------|
+| DP-1 Destructive Test | Phase-4 | Attack may modify/delete data | Reject |
+| DP-2 Manual Credentials | Phase-3 | Auto-login failed | Degrade and continue |
+| DP-3 Low Confidence Deep Dive | Phase-4 | Confidence < 50% | Skip |
+| DP-4 Scope Adjustment | Phase-2 | Sinks > 50 | Keep current threshold |
+| DP-5 Framework Mismatch | Phase-1 | Detected differs from expected | Use detected framework |
+| DP-6 Critical Confirmation | Phase-4 | First Critical vulnerability | Continue auditing |
 
-### 🔒 质量保障体系
+### 🔒 Quality Assurance System
 
-- **Gate 门禁**：每阶段结束强制校验产物存在性（GATE-1 \~ GATE-4.5）
-- **独立 QC 池**：按需 spawn 质检员，"完成一个、校验一个"
-- **31 个 JSON Schema**：所有 Agent 间数据交换严格校验格式，251 个 string 字段全部约束
-- **Sink 注册表**：`sink_registry.json` 作为单一数据源，`sink_finder.php` 运行时加载
-- **Schema-文档一致性校验**：`validate_shared.php` 自动检测 `data_contracts.md` 与 `schemas/` 的一致性
-- **560+ 可控性约束**：填空模板 + 反幻觉规则 + Schema 校验，消除自由文本幻觉风险
+- **Gate Checkpoints**: Mandatory artifact validation at each phase end (GATE-1 through GATE-4.5)
+- **Independent QC Pool**: On-demand quality checkers spawned per completion
+- **31 JSON Schemas**: Strict format validation for all inter-agent data exchange, 251 string fields constrained
+- **Sink Registry**: `sink_registry.json` as single source of truth, loaded at runtime by `sink_finder.php`
+- **Schema-Doc Consistency Check**: `validate_shared.php` auto-detects inconsistencies between `data_contracts.md` and `schemas/`
+- **560+ Controllability Constraints**: Fill-in templates + anti-hallucination rules + Schema validation, eliminating free-text hallucination risk
 
-### ✅ 修复补丁自动验证
+### ✅ Automated Patch Verification
 
-Phase-4.5 生成 Patch 后自动执行 7 步验证：Apply → 验证应用 → 重放攻击 Payload → 检查漏洞修复 → 检查回归 → 回滚 Patch → 验证回滚。验证结果分类：`verified` / `partial_regression` / `not_fixed` / `apply_failed` / `rollback_failed`
+Phase-4.5 generates patches and auto-executes 7-step verification: Apply → Verify application → Replay attack payload → Check fix → Check regression → Rollback patch → Verify rollback. Results categorized: `verified` / `partial_regression` / `not_fixed` / `apply_failed` / `rollback_failed`
 
-### 📊 专业审计报告
+### 📊 Professional Audit Report
 
-单文件全包含报告，含：Context Pack 内嵌、Burp 复现模板、Mermaid 攻击链可视化、CVSS 进度条（`████████░░ 9.45/10`）、SARIF 2.1.0 导出、Patch 验证状态。
+Single-file comprehensive report with: Embedded Context Packs, Burp reproduction templates, Mermaid attack chain visualization, CVSS progress bars (`████████░░ 9.45/10`), SARIF 2.1.0 export, Patch verification status.
 
-***
+---
 
-## 架构总览
+## Architecture
 
-### 阶段功能总览
+### Phase Overview
 
-| 阶段                 | Agent 数 | 核心功能                                | 关键产物                                   |
-| ------------------ | ------- | ----------------------------------- | -------------------------------------- |
-| **Phase 1: 环境构建**  | 3       | 框架识别、Schema 重建、Docker 构建 + 自愈       | `environment_status.json`              |
-| **Phase 2: 静态侦察**  | 12      | 工具扫描（7 种）、路由映射、鉴权矩阵、依赖扫描、上下文抽取、风险定级 | `priority_queue.json`、`context_packs/` |
-| **Phase 3: 动态追踪**  | 3+N     | 鉴权模拟、Xdebug 追踪、调用链校验                | `traces/*.json`、`credentials.json`     |
-| **Phase 4: 深度利用**  | 21+1    | 21 类漏洞专家审计 + Mini-Researcher        | `exploits/*.json`、`research/*.json`    |
-| **Phase 4.5: 后渗透** | 4       | 攻击图谱、关联分析、Patch 自动验证、PoC 生成         | `attack_graph.json`、`PoC脚本/*.py`       |
-| **Phase 5: 报告收口**  | 3       | 报告生成、SARIF 导出、环境清理                  | `报告/审计报告.md`、`.sarif.json`             |
-| **QC: 质检**         | 2       | 独立质检员池、贯穿全流程                        | QC 记录写入 `audit_session.db`             |
+| Phase | Agents | Core Functions | Key Artifacts |
+|-------|--------|---------------|---------------|
+| **Phase 1: Environment** | 3 | Framework fingerprint, Schema reconstruction, Docker build + self-heal | `environment_status.json` |
+| **Phase 2: Static Recon** | 12 | Tool scanning (7 types), Route mapping, Auth matrix, Dependency scanning, Context extraction, Risk classification | `priority_queue.json`, `context_packs/` |
+| **Phase 3: Dynamic Tracing** | 3+N | Auth simulation, Xdebug tracing, Call chain verification | `traces/*.json`, `credentials.json` |
+| **Phase 4: Deep Exploitation** | 21+1 | 21 vulnerability type expert audit + Mini-Researcher | `exploits/*.json`, `research/*.json` |
+| **Phase 4.5: Post-Exploitation** | 4 | Attack graph, Correlation analysis, Patch auto-verification, PoC generation | `attack_graph.json`, `PoC_scripts/*.py` |
+| **Phase 5: Reporting** | 3 | Report generation, SARIF export, Environment cleanup | `report/audit_report.md`, `.sarif.json` |
+| **QC: Quality Control** | 2 | Independent QC pool, full-pipeline coverage | QC records in `audit_session.db` |
 
-### Skills 体系
+### Skills System
 
-145+ skills 组织在 `skills/` 的 10 个子目录中，采用 **2-Stage 审计员模式**（21 种审计员 × 2 阶段 = 42 文件）和标准化 **填空模板格式**。
+145+ skills organized in 10 subdirectories under `skills/`, using a **2-Stage Auditor Pattern** (21 auditor types × 2 stages = 42 files) and standardized **Fill-in Template Format**.
 
 ```
 skills/
@@ -145,195 +147,195 @@ skills/
 └── trace/          — 14 trace sub-skills + index
 ```
 
-**填空模板标准**：`Identity → Input Contract → 🚨 CRITICAL Rules → Fill-in Procedure → Output Contract → ✅/❌ Examples → Error Handling`
+**Fill-in Template Standard**: `Identity → Input Contract → 🚨 CRITICAL Rules → Fill-in Procedure → Output Contract → ✅/❌ Examples → Error Handling`
 
-### 设计哲学
+### Design Philosophy
 
-| 原则              | 含义                              |
-| --------------- | ------------------------------- |
-| 填空模板 > 自由生成     | 结构化字段减少 AI 幻觉                   |
-| 正反例 > 抽象规则      | 具体示例锚定行为                        |
-| 多Agent单一职责 > 单体 | 每个 Agent 只做一件事                  |
-| 独立QC不自审         | 质量校验由独立质检员执行                    |
-| AI指令英文，输出中文     | 模型精确性 + 用户可读性                   |
-| 单一数据源           | `sink_registry.json` 统一 Sink 定义 |
-| 配置驱动 > 硬编码      | `audit_config.yaml` 让用户自定义审计参数  |
+| Principle | Meaning |
+|-----------|---------|
+| Fill-in Template > Free Generation | Structured fields reduce AI hallucination |
+| Positive/Negative Examples > Abstract Rules | Concrete examples anchor behavior |
+| Single-Responsibility Agents > Monolith | Each Agent does one thing only |
+| Independent QC, No Self-Review | Quality checks by independent QC agents |
+| English Instructions, Chinese Output | Model precision + user readability |
+| Single Source of Truth | `sink_registry.json` unifies Sink definitions |
+| Config-Driven > Hardcoded | `audit_config.yaml` lets users customize audit parameters |
 
-### 攻击循环
+### Attack Loop
 
 ```
-查询攻击记忆（扁平 + 图记忆）
+Query attack memory (flat + graph memory)
   ↓
-制定攻击计划 → exploit_plan.json
+Create attack plan → exploit_plan.json
   ↓
-Round 1~N 循环（默认 8 轮，可配置）：
-  ① Docker 快照
-  ② 发送 Payload
-  ③ 采集物理证据（HTTP 响应/命令输出）
-  ④ 成功 → 写入 exploit + 记忆
-  ⑤ 失败 → WAF 分析 → 调整策略
-  ⑥ 连续失败 → Pivot 转向
-  ⑦ 触发条件 → Mini-Researcher 委派
-  ⑧ 连续 N 轮无新发现 → 早停退出
+Round 1~N loop (default 8 rounds, configurable):
+  ① Docker snapshot
+  ② Send payload
+  ③ Collect physical evidence (HTTP response / command output)
+  ④ Success → write exploit + memory
+  ⑤ Failure → WAF analysis → adjust strategy
+  ⑥ Consecutive failures → Pivot
+  ⑦ Trigger condition → Mini-Researcher delegation
+  ⑧ N consecutive rounds with no new findings → Early stop
   ↓
-写入攻击记忆 → QC 质检 → 下一个 Sink
+Write attack memory → QC check → Next Sink
 ```
 
-### Pivot 自动转向
+### Pivot Auto-Redirect
 
-| 原始攻击                   | 转向目标                     |
-| ---------------------- | ------------------------ |
-| SQLi 全部失败              | 二阶 SQLi（存储→读取→拼接）        |
-| XSS 被完全过滤              | SSTI（`{{7*7}}` 探测）       |
-| LFI 路径过滤               | `php://filter` chain RCE |
-| RCE disable\_functions | 反序列化 POP chain           |
-| SSRF 内网不可达             | DNS Rebinding            |
+| Original Attack | Pivot Target |
+|----------------|-------------|
+| SQLi all failed | 2nd-order SQLi (store→read→concat) |
+| XSS fully filtered | SSTI (`{{7*7}}` probe) |
+| LFI path filtered | `php://filter` chain RCE |
+| RCE disable_functions | Deserialization POP chain |
+| SSRF internal unreachable | DNS Rebinding |
 
-### 修复补丁自动验证
+### Automated Patch Verification
 
 ```
-E-1: git apply 应用 Patch
-E-2: 验证应用成功
-E-3: 重放攻击 Payload
-E-4: 检查漏洞是否修复
-E-5: 检查无回归
-E-6: git apply -R 回滚 Patch
-E-7: 验证回滚干净
-→ 写入 verification_status 到 remediation_summary.json
+E-1: git apply patch
+E-2: Verify application success
+E-3: Replay attack payload
+E-4: Check vulnerability fixed
+E-5: Check no regression
+E-6: git apply -R rollback patch
+E-7: Verify rollback clean
+→ Write verification_status to remediation_summary.json
 ```
 
-跳过条件：非 Git 仓库 / 容器未运行 / 无成功 Payload / 配置变更类 Patch
-回滚失败紧急恢复：`git checkout -- .`
+Skip conditions: Non-Git repo / Container not running / No successful payload / Config-change patches
+Rollback failure emergency recovery: `git checkout -- .`
 
-***
+---
 
-## Agent 编制
+## Agent Roster
 
-### Team 1 — 环境构建（3 Agents）
+### Team 1 — Environment Setup (3 Agents)
 
-| Agent                  | 职责                                |
-| ---------------------- | --------------------------------- |
-| `env_detective`        | 框架指纹、PHP 版本、DB 类型识别               |
-| `schema_reconstructor` | 从 ORM 模型重建数据库表结构                  |
-| `docker_builder`       | Docker 环境构建 + `env_selfheal` 自愈循环 |
+| Agent | Responsibility |
+|-------|---------------|
+| `env_detective` | Framework fingerprint, PHP version, DB type identification |
+| `schema_reconstructor` | Reconstruct DB schema from ORM models |
+| `docker_builder` | Docker environment build + `env_selfheal` recovery loop |
 
-### Team 2 — 静态侦察（12 Agents）
+### Team 2 — Static Reconnaissance (12 Agents)
 
-| Agent                    | 职责                                              |
-| ------------------------ | ----------------------------------------------- |
-| `psalm_scanner`          | Psalm taint analysis                            |
-| `progpilot_scanner`      | Progpilot vulnerability scan                    |
-| `ast_scanner`            | AST sink detection（从 `sink_registry.json` 加载定义） |
-| `phpstan_scanner`        | PHPStan static analysis                         |
-| `semgrep_scanner`        | Semgrep pattern matching                        |
-| `composer_audit_scanner` | Composer dependency audit                       |
-| `codeql_scanner`         | CodeQL analysis (optional)                      |
-| `route_mapper`           | 路由表解析与映射                                        |
-| `auth_auditor`           | 鉴权机制分析                                          |
-| `dep_scanner`            | 第三方组件 CVE 检测                                    |
-| `context_extractor`      | Sink 上下文抽取 + 数据流分析                              |
-| `risk_classifier`        | 风险优先级定级 P0/P1/P2/P3                             |
+| Agent | Responsibility |
+|-------|---------------|
+| `psalm_scanner` | Psalm taint analysis |
+| `progpilot_scanner` | Progpilot vulnerability scan |
+| `ast_scanner` | AST sink detection (loads from `sink_registry.json`) |
+| `phpstan_scanner` | PHPStan static analysis |
+| `semgrep_scanner` | Semgrep pattern matching |
+| `composer_audit_scanner` | Composer dependency audit |
+| `codeql_scanner` | CodeQL analysis (optional) |
+| `route_mapper` | Route table parsing and mapping |
+| `auth_auditor` | Authentication mechanism analysis |
+| `dep_scanner` | Third-party component CVE detection |
+| `context_extractor` | Sink context extraction + data flow analysis |
+| `risk_classifier` | Risk priority classification P0/P1/P2/P3 |
 
-### Team 3 — 动态追踪（3 + N Agents）
+### Team 3 — Dynamic Tracing (3 + N Agents)
 
-| Agent              | 职责                 |
-| ------------------ | ------------------ |
-| `auth_simulator`   | 模拟多角色登录获取凭证        |
-| `trace_dispatcher` | 读取高危 Sink 分批创建追踪任务 |
-| `trace_worker` ×N  | Xdebug 追踪执行（动态创建）  |
+| Agent | Responsibility |
+|-------|---------------|
+| `auth_simulator` | Simulate multi-role login to obtain credentials |
+| `trace_dispatcher` | Read high-risk sinks, batch-create trace tasks |
+| `trace_worker` ×N | Xdebug trace execution (dynamically created) |
 
-### Team 4 — 漏洞审计（21 + 1 Agents）
+### Team 4 — Vulnerability Audit (21 + 1 Agents)
 
 <details>
-<summary>展开 21 种专家审计员</summary>
+<summary>Expand 21 Expert Auditors</summary>
 
-| #  | Agent                    | 覆盖类型                                    |
-| -- | ------------------------ | --------------------------------------- |
-| 1  | `rce_auditor`            | 命令/代码执行（含 PHP 8.x NamedArgs/FirstClass） |
-| 2  | `sqli_auditor`           | SQL 注入（一阶 + 二阶）                         |
-| 3  | `xss_ssti_auditor`       | XSS + SSTI                              |
-| 4  | `lfi_auditor`            | 本地/远程文件包含                               |
-| 5  | `filewrite_auditor`      | 文件上传/写入                                 |
-| 6  | `ssrf_auditor`           | SSRF + DNS Rebinding                    |
-| 7  | `xxe_auditor`            | XML 外部实体                                |
-| 8  | `deserial_auditor`       | 反序列化 + POP chain                        |
-| 9  | `crlf_auditor`           | CRLF 注入                                 |
-| 10 | `csrf_auditor`           | 跨站请求伪造                                  |
-| 11 | `authz_auditor`          | 越权 + IDOR                               |
-| 12 | `session_auditor`        | Session 管理缺陷                            |
-| 13 | `crypto_auditor`         | 弱加密/密钥泄露                                |
-| 14 | `race_condition_auditor` | 竞态条件（含 Fiber 并发）                        |
-| 15 | `nosql_auditor`          | MongoDB/Redis 注入                        |
-| 16 | `ldap_auditor`           | LDAP 注入                                 |
-| 17 | `infoleak_auditor`       | 信息泄露                                    |
-| 18 | `logging_auditor`        | 日志注入/敏感日志                               |
-| 19 | `config_auditor`         | 配置缺陷                                    |
-| 20 | `wordpress_auditor`      | WordPress 专有漏洞                          |
-| 21 | `business_logic_auditor` | 业务逻辑缺陷                                  |
-| —  | `mini_researcher`        | 智能研究员（按需委派）                             |
+| # | Agent | Coverage |
+|---|-------|----------|
+| 1 | `rce_auditor` | Command/code execution (incl. PHP 8.x NamedArgs/FirstClass) |
+| 2 | `sqli_auditor` | SQL injection (1st + 2nd order) |
+| 3 | `xss_ssti_auditor` | XSS + SSTI |
+| 4 | `lfi_auditor` | Local/remote file inclusion |
+| 5 | `filewrite_auditor` | File upload/write |
+| 6 | `ssrf_auditor` | SSRF + DNS Rebinding |
+| 7 | `xxe_auditor` | XML external entity |
+| 8 | `deserial_auditor` | Deserialization + POP chain |
+| 9 | `crlf_auditor` | CRLF injection |
+| 10 | `csrf_auditor` | Cross-site request forgery |
+| 11 | `authz_auditor` | Authorization bypass + IDOR |
+| 12 | `session_auditor` | Session management flaws |
+| 13 | `crypto_auditor` | Weak crypto/key leakage |
+| 14 | `race_condition_auditor` | Race conditions (incl. Fiber concurrency) |
+| 15 | `nosql_auditor` | MongoDB/Redis injection |
+| 16 | `ldap_auditor` | LDAP injection |
+| 17 | `infoleak_auditor` | Information disclosure |
+| 18 | `logging_auditor` | Log injection/sensitive logging |
+| 19 | `config_auditor` | Configuration flaws |
+| 20 | `wordpress_auditor` | WordPress-specific vulnerabilities |
+| 21 | `business_logic_auditor` | Business logic flaws |
+| — | `mini_researcher` | Intelligent researcher (on-demand delegation) |
 
 </details>
 
-### Team 4.5 — 后渗透分析（4 Agents）
+### Team 4.5 — Post-Exploitation Analysis (4 Agents)
 
-| Agent                   | 职责                         |
-| ----------------------- | -------------------------- |
-| `attack_graph_builder`  | 构建攻击图谱 + 链式利用路径            |
-| `correlation_engine`    | 跨审计员关联 + 图记忆消费 + 误报消除      |
-| `poc_generator`         | 可执行 PoC 脚本生成               |
-| `remediation_generator` | 修复 Patch 生成（框架适配）+ 7 步自动验证 |
+| Agent | Responsibility |
+|-------|---------------|
+| `attack_graph_builder` | Build attack graph + chain exploitation paths |
+| `correlation_engine` | Cross-auditor correlation + graph memory consumption + false positive elimination |
+| `poc_generator` | Executable PoC script generation |
+| `remediation_generator` | Fix patch generation (framework-adapted) + 7-step auto-verification |
 
-### Team 5 — 报告收口（3 Agents + 7 Chapter Writers）
+### Team 5 — Reporting (3 Agents + 7 Chapter Writers)
 
-| Agent            | 职责                       |
-| ---------------- | ------------------------ |
-| `report_writer`  | 主审计报告编排（7 章并行写入 → 单文件组装） |
-| `sarif_exporter` | SARIF 2.1.0 标准导出         |
-| `env_cleaner`    | Xdebug 清理 + 代码/数据库还原     |
+| Agent | Responsibility |
+|-------|---------------|
+| `report_writer` | Main audit report orchestration (7 chapters parallel write → single-file assembly) |
+| `sarif_exporter` | SARIF 2.1.0 standard export |
+| `env_cleaner` | Xdebug cleanup + code/DB restoration |
 
-**7 个 Chapter Writers**：`cover_page_writer`（封面+目录+摘要）、`vuln_summary_writer`（汇总表）、`vuln_detail_writer`（漏洞详情）、`attack_chain_writer`（联合攻击链）、`coverage_stats_writer`（覆盖率）、`risk_pool_writer`（风险池）、`lessons_writer`（经验总结）
+**7 Chapter Writers**: `cover_page_writer` (cover + TOC + summary), `vuln_summary_writer` (summary table), `vuln_detail_writer` (vulnerability details), `attack_chain_writer` (combined attack chains), `coverage_stats_writer` (coverage), `risk_pool_writer` (risk pool), `lessons_writer` (lessons learned)
 
-### QC — 独立质检（2 Agents）
+### QC — Independent Quality Control (2 Agents)
 
-| Agent             | 职责                              |
-| ----------------- | ------------------------------- |
-| `qc_dispatcher`   | 质检任务分发                          |
-| `quality_checker` | 质量校验（含 Mini-Researcher + 图记忆专项） |
+| Agent | Responsibility |
+|-------|---------------|
+| `qc_dispatcher` | QC task dispatch |
+| `quality_checker` | Quality validation (incl. Mini-Researcher + graph memory specialized checks) |
 
-***
+---
 
-## 快速开始
+## Quick Start
 
-### 前置要求
+### Prerequisites
 
-- **Docker** + **Docker Compose**（必需）
-- **Claude Code**（v2.1.87+）
-- **tmux**（可选，分屏查看并行 Agent）
+- **Docker** + **Docker Compose** (required)
+- **Claude Code** (v2.1.87+)
+- **tmux** (optional, split-view for parallel agents)
 
-> 本项目自带完整的多 Agent 编排（phases + teams + skills），无需依赖 Claude Code 的 Agent Teams 实验特性。如使用第三方 API，建议关闭 Agent Teams 以避免模型不兼容问题。
+> This project includes complete multi-agent orchestration (phases + teams + skills), no dependency on Claude Code's experimental Agent Teams feature. When using third-party APIs, it's recommended to disable Agent Teams to avoid model compatibility issues.
 
-### 1. 准备环境
+### 1. Prepare Environment
 
 ```bash
 docker --version
 docker compose version
 ```
 
-### 2. 配置 Skill
+### 2. Configure Skill
 
-将本仓库放入 Claude Code 的 skills 目录，或作为项目级 `.github/skills/PHP_code_audit_skills/` 使用。
+Place this repository in Claude Code's skills directory, or use as project-level `.github/skills/PHP_code_audit_skills/`.
 
-### 3. 一键启动审计
+### 3. Launch Audit
 
 ```text
 /php-code-audit-skills /path/to/php-project
 ```
 
-系统自动执行 6 阶段全链路审计，输出完整报告和 PoC。
+The system automatically executes the 6-phase full-chain audit, producing a complete report and PoC.
 
-### 4. 自定义配置
+### 4. Custom Configuration
 
-在目标项目根目录创建 `.php-audit.yaml`，或使用 `--config` 指定配置文件：
+Create `.php-audit.yaml` in the target project root, or use `--config` to specify a config file:
 
 ```text
 /php-code-audit-skills /path/to/php-project --config /path/to/audit_config.yaml
@@ -359,258 +361,258 @@ human_in_loop:
   ask_on_destructive: true
 ```
 
-**加载优先级**：CLI `--config` > 目标项目 `.php-audit.yaml` > 内置默认值
+**Loading Priority**: CLI `--config` > Target project `.php-audit.yaml` > Built-in defaults
 
-***
+---
 
-## 目录结构
+## Directory Structure
 
 ```text
 PHP_code_audit_skills/
 │
-├── SKILL.md                          # 主调度器（Skill 入口 + 配置文件支持 + 人在回路决策点）
-├── README.md                         # 本文档
-├── 全链路详细流程.md                    # 完整执行流程图（文字版）
+├── SKILL.md                          # Master orchestrator (Skill entry + config support + HITL decision points)
+├── README.md                         # This file (English documentation)
+├── README_CN.md                      # Chinese documentation (中文文档)
+├── 全链路详细流程.md                    # Complete execution flowchart (text version)
 │
-├── phases/                           # 阶段执行模板（7 个）
-│   ├── phase1-env.md                 #   环境智能识别与构建
-│   ├── phase2-recon.md               #   静态资产侦察
-│   ├── phase2-tasks-dynamic.md       #   动态侦察任务创建
-│   ├── phase3-trace.md               #   鉴权模拟与动态追踪
-│   ├── phase4-exploit.md             #   深度对抗审计
-│   ├── phase45-post.md               #   后渗透智能分析（含 Patch 自动验证）
-│   └── phase5-report.md              #   清理与报告收口
+├── phases/                           # Phase execution templates (7 files)
+│   ├── phase1-env.md                 #   Environment detection and build
+│   ├── phase2-recon.md               #   Static asset reconnaissance
+│   ├── phase2-tasks-dynamic.md       #   Dynamic recon task creation
+│   ├── phase3-trace.md               #   Auth simulation and dynamic tracing
+│   ├── phase4-exploit.md             #   Deep adversarial audit
+│   ├── phase45-post.md               #   Post-exploitation analysis (incl. Patch auto-verification)
+│   └── phase5-report.md              #   Cleanup and report generation
 │
-├── teams/                            # Agent 指令文件（40+ Agents）
-│   ├── team1/                        #   环境构建（3）
-│   ├── team2/                        #   静态侦察（5 dispatchers）
-│   ├── team3/                        #   动态追踪（3+N）
-│   ├── team4/                        #   漏洞审计（21+1）
-│   ├── team4.5/                      #   后渗透分析（4，含 Patch 自动验证）
-│   ├── team5/                        #   报告收口（3）
-│   └── qc/                           #   质检（2）
+├── teams/                            # Agent instruction files (40+ Agents)
+│   ├── team1/                        #   Environment setup (3)
+│   ├── team2/                        #   Static recon (5 dispatchers)
+│   ├── team3/                        #   Dynamic tracing (3+N)
+│   ├── team4/                        #   Vulnerability audit (21+1)
+│   ├── team4.5/                      #   Post-exploitation (4, incl. Patch auto-verification)
+│   ├── team5/                        #   Reporting (3)
+│   └── qc/                           #   Quality control (2)
 │
-├── shared/                           # 共享知识库（28 个）
-│   ├── anti_hallucination.md         #   反幻觉规则（17 条铁律）
-│   ├── php_specific_patterns.md      #   PHP 特有攻击模式（含 PHP 8.x）
-│   ├── sink_definitions.md           #   Sink 函数定义（25 类，含 PHP 8.x Sink）
-│   ├── attack_memory.md              #   攻击记忆系统（扁平 + 关系型）
-│   ├── attack_memory_graph.md        #   关系型图记忆模型
-│   ├── data_contracts.md             #   数据合约（引用 schemas/）
-│   ├── evidence_contract.md          #   证据采集标准
-│   └── ...                           #   其余 21 个共享知识文件
+├── shared/                           # Shared knowledge base (28 files)
+│   ├── anti_hallucination.md         #   Anti-hallucination rules (17 iron laws)
+│   ├── php_specific_patterns.md      #   PHP-specific attack patterns (incl. PHP 8.x)
+│   ├── sink_definitions.md           #   Sink function definitions (25 categories, incl. PHP 8.x)
+│   ├── attack_memory.md              #   Attack memory system (flat + relational)
+│   ├── attack_memory_graph.md        #   Relational graph memory model
+│   ├── data_contracts.md             #   Data contracts (references schemas/)
+│   ├── evidence_contract.md          #   Evidence collection standards
+│   └── ...                           #   Remaining 21 shared knowledge files
 │
-├── schemas/                          # JSON Schema（31 个）
-│   ├── sink_registry.json            #   Sink 函数注册表（单一数据源）
-│   └── ...                           #   其余 30 个 Schema
+├── schemas/                          # JSON Schema (31 files)
+│   ├── sink_registry.json            #   Sink function registry (single source of truth)
+│   └── ...                           #   Remaining 30 schemas
 │
-├── references/                       # 参考文档（9 个）
-│   ├── agent_injection_framework.md  #   Agent 注入框架（L1/L2/L3）
-│   └── ...                           #   其余 8 个参考文档
+├── references/                       # Reference documentation (9 files)
+│   ├── agent_injection_framework.md  #   Agent injection framework (L1/L2/L3)
+│   └── ...                           #   Remaining 8 reference docs
 │
-├── tools/                            # 辅助工具（12 个）
-│   ├── audit_db.sh                   #   数据库操作（含依赖检查+权限校验+智能错误日志）
-│   ├── sink_finder.php               #   AST Sink 扫描器（从 sink_registry.json 加载）
-│   ├── trace_filter.php              #   Xdebug Trace 过滤器
-│   ├── payload_encoder.php           #   Payload 编码器
-│   ├── waf_detector.php              #   WAF 指纹识别
-│   ├── jwt_tester.php                #   JWT 安全测试
-│   ├── type_juggling_tester.php      #   PHP 类型混淆测试
-│   ├── redirect_checker.php          #   开放重定向检测
-│   ├── validate_shared.php           #   shared/ 校验 + Schema-文档一致性 + Sink注册表校验
-│   ├── vuln_intel.sh                 #   漏洞情报收集
-│   ├── audit_monitor.sh              #   审计监控
-│   └── quality_report_gen.sh         #   QC 报告生成
+├── tools/                            # Auxiliary tools (12 files)
+│   ├── audit_db.sh                   #   DB operations (incl. dependency check + permission validation)
+│   ├── sink_finder.php               #   AST Sink scanner (loads from sink_registry.json)
+│   ├── trace_filter.php              #   Xdebug Trace filter
+│   ├── payload_encoder.php           #   Payload encoder
+│   ├── waf_detector.php              #   WAF fingerprint detection
+│   ├── jwt_tester.php                #   JWT security testing
+│   ├── type_juggling_tester.php      #   PHP type confusion testing
+│   ├── redirect_checker.php          #   Open redirect detection
+│   ├── validate_shared.php           #   shared/ validation + Schema consistency + Sink registry check
+│   ├── vuln_intel.sh                 #   Vulnerability intelligence collection
+│   ├── audit_monitor.sh              #   Audit monitoring
+│   └── quality_report_gen.sh         #   QC report generation
 │
-├── templates/                        # 环境模板 + 配置模板
-│   ├── audit_config.yaml             #   审计配置文件模板
+├── templates/                        # Environment + config templates
+│   ├── audit_config.yaml             #   Audit configuration template
 │   ├── Dockerfile.template
 │   ├── docker-compose.template.yml
 │   ├── xdebug.ini.template
-│   └── nginx/                        #   Nginx 框架适配配置
+│   └── nginx/                        #   Nginx framework-adapted configs
 │
-├── assets/                           # 可视化资源
-├── agent-flow.mmd                    # Agent 执行流程图（Mermaid）
-└── audit-flow.mmd                    # 审计流程图（Mermaid）
+├── assets/                           # Visual resources
+├── agent-flow.mmd                    #   Agent execution flowchart (Mermaid)
+└── audit-flow.mmd                    #   Audit flowchart (Mermaid)
 ```
 
-***
+---
 
-## 辅助工具详解
+## Tool Reference
 
-| 工具                         | 用途                                        | 使用阶段    |
-| -------------------------- | ----------------------------------------- | ------- |
-| `audit_db.sh`              | SQLite 数据库操作（含依赖检查+权限校验）                  | 全阶段     |
-| `sink_finder.php`          | AST Sink 扫描器（从 `sink_registry.json` 加载定义） | Phase-2 |
-| `trace_filter.php`         | Xdebug Trace 精简过滤器                        | Phase-3 |
-| `payload_encoder.php`      | Payload 编码（URL/Base64/Hex/双重等）            | Phase-4 |
-| `waf_detector.php`         | WAF/过滤器指纹识别                               | Phase-4 |
-| `jwt_tester.php`           | JWT 安全测试                                  | Phase-4 |
-| `type_juggling_tester.php` | PHP 类型混淆松散比较测试                            | Phase-4 |
-| `redirect_checker.php`     | 开放重定向检测                                   | Phase-4 |
-| `vuln_intel.sh`            | 漏洞情报收集（NVD/GitHub Advisory）               | Phase-4 |
-| `audit_monitor.sh`         | 审计进度实时监控                                  | 全阶段     |
-| `quality_report_gen.sh`    | QC 报告汇总生成                                 | Phase-5 |
-| `validate_shared.php`      | shared/ 完整性校验 + Schema 一致性 + Sink 注册表校验   | 开发/维护   |
+| Tool | Purpose | Phase |
+|------|---------|-------|
+| `audit_db.sh` | SQLite DB operations (incl. dependency check + permission validation) | All |
+| `sink_finder.php` | AST Sink scanner (loads definitions from `sink_registry.json`) | Phase-2 |
+| `trace_filter.php` | Xdebug Trace simplification filter | Phase-3 |
+| `payload_encoder.php` | Payload encoding (URL/Base64/Hex/double, etc.) | Phase-4 |
+| `waf_detector.php` | WAF/filter fingerprint detection | Phase-4 |
+| `jwt_tester.php` | JWT security testing | Phase-4 |
+| `type_juggling_tester.php` | PHP type confusion loose comparison testing | Phase-4 |
+| `redirect_checker.php` | Open redirect detection | Phase-4 |
+| `vuln_intel.sh` | Vulnerability intelligence (NVD/GitHub Advisory) | Phase-4 |
+| `audit_monitor.sh` | Real-time audit progress monitoring | All |
+| `quality_report_gen.sh` | QC report summary generation | Phase-5 |
+| `validate_shared.php` | shared/ integrity + Schema consistency + Sink registry validation | Dev/Maintenance |
 
-### audit\_db.sh 命令速查
+### audit_db.sh Command Reference
 
 ```bash
-# 攻击记忆
-bash audit_db.sh init-memory                     # 初始化（自动含图记忆）
-bash audit_db.sh memory-write '<json>'            # 写入攻击经验
-bash audit_db.sh memory-query '<json>'            # 查询匹配经验
-bash audit_db.sh memory-stats                     # 记忆库统计
-bash audit_db.sh memory-maintain                  # 清理过期记忆
+# Attack Memory
+bash audit_db.sh init-memory                     # Initialize (auto-includes graph memory)
+bash audit_db.sh memory-write '<json>'            # Write attack experience
+bash audit_db.sh memory-query '<json>'            # Query matching experience
+bash audit_db.sh memory-stats                     # Memory store statistics
+bash audit_db.sh memory-maintain                  # Clean expired memory
 
-# 图记忆
-bash audit_db.sh graph-node-write '<json>'        # 写入图节点
-bash audit_db.sh graph-edge-write '<json>'        # 写入图边
-bash audit_db.sh graph-neighbors <node_id>        # 查询邻居节点
-bash audit_db.sh graph-by-data-object <obj>       # 按数据对象查询
-bash audit_db.sh graph-export <WORK_DIR>          # 导出完整图数据
+# Graph Memory
+bash audit_db.sh graph-node-write '<json>'        # Write graph node
+bash audit_db.sh graph-edge-write '<json>'        # Write graph edge
+bash audit_db.sh graph-neighbors <node_id>        # Query neighbor nodes
+bash audit_db.sh graph-by-data-object <obj>       # Query by data object
+bash audit_db.sh graph-export <WORK_DIR>          # Export complete graph data
 
-# 发现管理
-bash audit_db.sh finding-write '<json>'           # 写入发现
-bash audit_db.sh finding-read [sink_id]           # 读取发现
-bash audit_db.sh finding-consume <sink_id>        # 消费发现
+# Findings Management
+bash audit_db.sh finding-write '<json>'           # Write finding
+bash audit_db.sh finding-read [sink_id]           # Read findings
+bash audit_db.sh finding-consume <sink_id>        # Consume finding
 
-# 质检
-bash audit_db.sh qc-write '<json>'                # 写入质检记录
-bash audit_db.sh qc-read [phase]                  # 读取质检记录
+# Quality Control
+bash audit_db.sh qc-write '<json>'                # Write QC record
+bash audit_db.sh qc-read [phase]                  # Read QC records
 ```
 
-***
+---
 
-## 输出产物
+## Output Artifacts
 
 ```
 $WORK_DIR/
-├── 报告/
-│   ├── 审计报告.md              ← 全中文单文件报告
-│   └── audit_report.sarif.json  ← SARIF 2.1.0
-├── PoC脚本/
-│   ├── poc_{sink_id}.py         ← 每个漏洞的 PoC
-│   └── 一键运行.sh              ← 批量执行
-├── 修复补丁/
-│   ├── {finding_id}.patch       ← 框架适配修复
-│   └── remediation_summary.json ← 含 verification_status + verification_summary
-├── 经验沉淀/
+├── report/
+│   ├── audit_report.md              ← Full Chinese single-file report
+│   └── audit_report.sarif.json      ← SARIF 2.1.0
+├── PoC_scripts/
+│   ├── poc_{sink_id}.py             ← PoC per vulnerability
+│   └── run_all.sh                   ← Batch execution
+├── patches/
+│   ├── {finding_id}.patch           ← Framework-adapted fix
+│   └── remediation_summary.json     ← With verification_status + verification_summary
+├── lessons/
 │   ├── lessons_learned.md
-│   └── 共享文件更新建议.md
-├── 质量报告/
-│   └── 质量报告.md
+│   └── shared_file_update_suggestions.md
+├── quality_report/
+│   └── quality_report.md
 ├── .audit_state/
-│   ├── audit_config.json        ← 解析后的审计配置
-│   ├── human_decisions.json     ← 人在回路决策记录
-│   └── error.log                ← 错误日志
-└── 原始数据/                    ← 中间产物归档
+│   ├── audit_config.json            ← Resolved audit configuration
+│   ├── human_decisions.json         ← HITL decision records
+│   └── error.log                    ← Error log
+└── raw_data/                        ← Intermediate artifacts archive
     ├── exploits/, traces/, context_packs/
     ├── attack_graph.json, correlation_report.json
     └── checkpoint.json
 ```
 
-### 审计报告结构
+### Audit Report Structure
 
 ```
-审计报告.md
-├── 封面（项目元数据 + CVSS可视化进度条）
-├── 目录（7章锚点导航）
-├── 执行摘要（整体风险等级 + 关键发现 + 审计范围）
-├── 漏洞汇总表（CVSS进度条 + AI验证徽章 + Patch验证状态）
-├── 漏洞详情 ×N
-│   ├── 漏洞信息卡（等级/类型/路由/Sink/鉴权/优先级）
-│   ├── 上下文包（入口→调用链→Sink + 中间件 + 过滤器 + 认证绕过）
-│   ├── Mermaid 攻击链
-│   ├── 数据流追踪（Source→Sink + file:line）
-│   ├── Burp 复现模板（Repeater + Intruder）
-│   ├── 攻击迭代记录
-│   └── 修复方案（修复前 vs 修复后 + 验证状态）
-├── 联合攻击链分析（Mermaid + 步骤表）
-├── 审计覆盖率统计
-├── 待补证风险池
-├── 审计经验总结
-└── 页脚（版本 + 时间 + 工具 + 配置摘要）
+audit_report.md
+├── Cover (project metadata + CVSS visual progress bars)
+├── Table of Contents (7-chapter anchor navigation)
+├── Executive Summary (overall risk level + key findings + audit scope)
+├── Vulnerability Summary Table (CVSS bars + AI verification badges + Patch status)
+├── Vulnerability Details ×N
+│   ├── Vulnerability Info Card (severity/type/route/sink/auth/priority)
+│   ├── Context Pack (entry→call chain→sink + middleware + filters + auth bypass)
+│   ├── Mermaid Attack Chain
+│   ├── Data Flow Trace (Source→Sink + file:line)
+│   ├── Burp Reproduction Template (Repeater + Intruder)
+│   ├── Attack Iteration Log
+│   └── Remediation (before vs after + verification status)
+├── Combined Attack Chain Analysis (Mermaid + step table)
+├── Audit Coverage Statistics
+├── Unverified Risk Pool
+├── Audit Lessons Learned
+└── Footer (version + timestamp + tools + config summary)
 ```
 
-***
+---
 
-## Gate 门禁与 QC 策略
+## Gate Checkpoints & QC Strategy
 
-### Gate 强制验收
+### Gate Mandatory Validation
 
-| Gate     | 校验条件                                        |
-| -------- | ------------------------------------------- |
-| GATE-1   | `environment_status.json` 存在                |
-| GATE-2   | `priority_queue.json` + `context_packs/` 存在 |
-| GATE-3   | `credentials.json` 存在                       |
-| GATE-4   | `exploits/*.json` 存在                        |
-| GATE-4.5 | `PoC脚本/*.py` 存在                             |
+| Gate | Validation Conditions |
+|------|----------------------|
+| GATE-1 | `environment_status.json` exists |
+| GATE-2 | `priority_queue.json` + `context_packs/` exist |
+| GATE-3 | `credentials.json` exists |
+| GATE-4 | `exploits/*.json` exist |
+| GATE-4.5 | `PoC_scripts/*.py` exist |
 
-### QC 降级策略
+### QC Degradation Strategy
 
-| 阶段      | 质检不通过处理                |
-| ------- | ---------------------- |
-| Phase-1 | 发回重做（最多 3 次），自愈循环/用户介入 |
-| Phase-2 | 定位责任 Agent 补充，标注覆盖率继续  |
-| Phase-3 | 断链路由退回静态分析，不阻塞         |
-| Phase-4 | 降级标注，不阻塞报告             |
+| Phase | QC Failure Handling |
+|-------|-------------------|
+| Phase-1 | Return for rework (max 3 retries), self-heal loop / user intervention |
+| Phase-2 | Locate responsible agent for supplement, annotate coverage and continue |
+| Phase-3 | Broken-chain routes fall back to static analysis, non-blocking |
+| Phase-4 | Degrade with annotation, non-blocking for report |
 
-***
+---
 
-## 知识注入架构
+## Knowledge Injection Architecture
 
-| 层级           | 注入时机         | 内容                                                                                                                                                                        |
-| ------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **L1（强制）**   | 所有 Agent 启动  | `anti_hallucination.md`、`evidence_contract.md`、`data_contracts.md`、`output_standard.md`                                                                                   |
-| **L2（角色相关）** | Phase-4 专家启动 | `sink_definitions.md`（含 PHP 8.x Sink）、`payload_templates.md`、`attack_memory.md`、`attack_memory_graph.md`、`waf_bypass.md`、`php_specific_patterns.md`（含 PHP 8.x 攻击模式）等 16 个 |
-| **L3（按需）**   | 运行时触发条件      | `lessons_learned.md`、`mini_researcher.md`                                                                                                                                 |
+| Tier | Injection Timing | Content |
+|------|-----------------|---------|
+| **L1 (Mandatory)** | All Agent startup | `anti_hallucination.md`, `evidence_contract.md`, `data_contracts.md`, `output_standard.md` |
+| **L2 (Role-based)** | Phase-4 expert startup | `sink_definitions.md` (incl. PHP 8.x), `payload_templates.md`, `attack_memory.md`, `attack_memory_graph.md`, `waf_bypass.md`, `php_specific_patterns.md` (incl. PHP 8.x), etc. — 16 files |
+| **L3 (On-demand)** | Runtime trigger conditions | `lessons_learned.md`, `mini_researcher.md` |
 
-***
+---
 
-## 最佳实践
+## Best Practices
 
-1. **完整源码审计** — 提供完整项目源码目录，减少漏报
-2. **保留 Docker 环境** — 便于复现验证与物理证据采集
-3. **Gate + Schema 校验** — 交付前确认产物完整性
-4. **分级修复** — `confirmed` 优先修复，`suspected` 人工复核；参考 `verification_status`
-5. **攻击记忆复用** — 保留 `attack_memory.db`，积累跨项目经验
-6. **配置文件定制** — 根据项目特点创建 `.php-audit.yaml`，跳过不适用的审计员
-7. **开启人在回路** — 对关键项目开启 `human_in_loop.enabled: true`，确保破坏性测试需确认
+1. **Complete Source Code Audit** — Provide the full project source directory to minimize false negatives
+2. **Preserve Docker Environment** — Facilitates reproduction verification and physical evidence collection
+3. **Gate + Schema Validation** — Confirm artifact completeness before delivery
+4. **Tiered Remediation** — Fix `confirmed` findings first; manually review `suspected`; reference `verification_status`
+5. **Attack Memory Reuse** — Preserve `attack_memory.db` to accumulate cross-project experience
+6. **Config Customization** — Create `.php-audit.yaml` per project characteristics; skip inapplicable auditors
+7. **Enable Human-in-the-Loop** — For critical projects, enable `human_in_loop.enabled: true` to ensure destructive tests require confirmation
 
-***
+---
 
-## 项目统计
+## Project Statistics
 
-| 类别                  | 数量                           |
-| ------------------- | ---------------------------- |
-| Skill 文件（`skills/`） | 121（111 skill + 10 index）    |
-| 漏洞审计员（2-Stage）      | 21 types × 2 = 42 files      |
-| Skills 子目录          | 10                           |
-| JSON Schema         | 31 个（含 `sink_registry.json`） |
-| 共享知识库（`shared/`）    | 28 个                         |
-| 阶段定义                | 7 个                          |
-| 参考文档                | 9 个                          |
-| 辅助工具                | 12 个                         |
-| 环境模板                | 11 个（含 `audit_config.yaml`）  |
-| 报告 Chapter Writers  | 7 个                          |
-| 可控性约束               | 560+ 项                       |
-| Markdown 文件总计       | 210+ 个                       |
+| Category | Count |
+|----------|-------|
+| Skill files (`skills/`) | 121 (111 skills + 10 indexes) |
+| Vulnerability auditors (2-Stage) | 21 types × 2 = 42 files |
+| Skills subdirectories | 10 |
+| JSON Schema | 31 (incl. `sink_registry.json`) |
+| Shared knowledge base (`shared/`) | 28 |
+| Phase definitions | 7 |
+| Reference documentation | 9 |
+| Auxiliary tools | 12 |
+| Environment templates | 11 (incl. `audit_config.yaml`) |
+| Report Chapter Writers | 7 |
+| Controllability constraints | 560+ |
+| Total Markdown files | 210+ |
 
-***
+---
 
-## 免责声明
+## Disclaimer
 
-本项目仅供授权安全审计、安全研究和学习使用。使用本项目前，请务必遵守以下条款：
+This project is intended solely for authorized security auditing, security research, and educational purposes. Before using this project, you must comply with the following terms:
 
-1. **授权前提**：在使用本工具对任何系统进行安全审计前，必须获得目标系统所有者的明确书面授权。未经授权对他人系统进行安全测试属于违法行为。
-2. **合法使用**：使用者应确保其行为符合所在国家/地区的法律法规，包括但不限于《中华人民共和国网络安全法》、《中华人民共和国刑法》相关条款以及其他适用的地方法规。
-3. **责任自负**：本工具按"原样"提供，不作任何明示或暗示的保证。使用者因使用本工具造成的任何直接或间接损失（包括但不限于数据丢失、系统损坏、业务中断、法律责任等），作者不承担任何责任。
-4. **用途限制**：严禁将本工具用于任何非法用途，包括但不限于未授权入侵、数据窃取、系统破坏、网络攻击等。
-5. **漏洞披露**：通过本工具发现的安全漏洞应按照负责任披露原则，及时通知相关厂商或系统所有者，不得利用漏洞谋取不正当利益。
-6. **合规审计**：本工具生成的审计报告和 PoC 脚本仅用于验证漏洞存在性和协助修复，不得用于其他目的。
+1. **Authorization Prerequisite**: You must obtain explicit written authorization from the target system owner before conducting any security audit. Unauthorized security testing of others' systems is illegal.
+2. **Lawful Use**: Users must ensure their actions comply with applicable laws and regulations in their jurisdiction, including but not limited to the Cybersecurity Law of the People's Republic of China, relevant provisions of the Criminal Law of the People's Republic of China, and other applicable local regulations.
+3. **Assumption of Risk**: This tool is provided "as is" without any express or implied warranties. The author assumes no responsibility for any direct or indirect losses caused by the use of this tool (including but not limited to data loss, system damage, business interruption, legal liability, etc.).
+4. **Use Restrictions**: It is strictly prohibited to use this tool for any illegal purposes, including but not limited to unauthorized intrusion, data theft, system destruction, or cyber attacks.
+5. **Vulnerability Disclosure**: Security vulnerabilities discovered through this tool should be disclosed responsibly, promptly notifying the relevant vendors or system owners. Vulnerabilities must not be exploited for improper gain.
+6. **Compliant Auditing**: Audit reports and PoC scripts generated by this tool are solely for verifying vulnerability existence and assisting remediation, and must not be used for other purposes.
 
-**使用本工具即表示您已阅读、理解并同意遵守上述条款。如果您不同意任何条款，请勿使用本工具。**
+**Using this tool indicates that you have read, understood, and agree to comply with the above terms. If you do not agree with any term, do not use this tool.**
 
-***
-
+---
